@@ -28,6 +28,5 @@
   },
   "homepage": "https://github.com/KevGary/basic-movies-CRUD-Express-pg#readme",
   "dependencies": {
-    "pg": "^4.4.3"
   }
 }
