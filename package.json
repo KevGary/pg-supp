@@ -1,8 +1,8 @@
 {
   "name": "pg-supp",
-  "version": "1.0.1",
+  "version": "1.0.6",
   "description": "supplementary package for pg package (npm install pg)",
-  "main": "functions.js",
+  "main": "supp.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -28,5 +28,6 @@
   },
   "homepage": "https://github.com/KevGary/basic-movies-CRUD-Express-pg#readme",
   "dependencies": {
+    "pg": "^4.4.3"
   }
 }

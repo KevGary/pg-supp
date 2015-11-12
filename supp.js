@@ -1,7 +1,7 @@
 var pg = require('pg');
-var conString = 'postgres://@localhost/supp';
+var conString = "postgres://@localhost/database";
 
-var supp = {
+module.exports = {
   insert: function(table, columns, values) {
     var bangArray = this.generateBangArray(values);
     var queryString = String('INSERT INTO ' + String(table) + '(' + columns.toString() + ') VALUES('+ bangArray.toString() + ') returning id');
@@ -75,7 +75,6 @@ var supp = {
   } 
 }
 
-module.exports = supp;
 
 //some example calls
 // obj.deleteAll('movies')
