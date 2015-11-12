@@ -21,7 +21,7 @@
     "node",
     "module"
   ],
-  "author": "kev",
+  "author": "kev <kevgary.dev@gmail.com>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/KevGary/basic-movies-CRUD-Express-pg/issues"
