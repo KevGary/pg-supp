@@ -1,6 +1,6 @@
 {
   "name": "pg-supp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "supplementary package for pg package (npm install pg)",
   "main": "functions.js",
   "scripts": {
