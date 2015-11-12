@@ -1,0 +1,33 @@
+{
+  "name": "pg-supp",
+  "version": "1.0.0",
+  "description": "supplementary package for pg package (npm install pg)",
+  "main": "functions.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/KevGary/basic-movies-CRUD-Express-pg.git"
+  },
+  "keywords": [
+    "npm",
+    "pg",
+    "supplementary",
+    "supp",
+    "pg-supp",
+    "supp-pg",
+    "package",
+    "node",
+    "module"
+  ],
+  "author": "kev",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KevGary/basic-movies-CRUD-Express-pg/issues"
+  },
+  "homepage": "https://github.com/KevGary/basic-movies-CRUD-Express-pg#readme",
+  "dependencies": {
+    "pg": "^4.4.3"
+  }
+}
