@@ -1,21 +1,21 @@
-var pg = require('pg');
-var conString = "postgres://@localhost/database";
 
 module.exports = {
+  pg: require('pg'),
+  conString = "postgres://@localhost/database",
   insert: function(table, columns, values) {
     var bangArray = this.generateBangArray(values);
     var queryString = String('INSERT INTO ' + String(table) + '(' + columns.toString() + ') VALUES('+ bangArray.toString() + ') returning id');
-    this.connect(queryString, values);
+    return this.connect(queryString, values);
   },
 
   selectAll: function(table) {
     var queryString = String('SELECT * FROM ' + String(table));
-    this.connect(queryString);
+    return this.connect(queryString);
   },
 
   selectOne: function(table, condition) {
     var queryString = String('SELECT * FROM ' + String(table) + ' WHERE ' + String(condition));
-    this.connect(queryString);
+    return this.connect(queryString);
   },
 
   update: function(table, columns, newValues, condition) {
@@ -27,21 +27,19 @@ module.exports = {
         columnAssignmentArray.push(String(columns[i]) + ' = $' + String(i+1));        
       }
     }
-    console.log(columnAssignmentArray.join(' '));
     var bangArray = this.generateBangArray(newValues)
     var queryString = String('UPDATE ' + String(table) + ' SET ' + String(columnAssignmentArray.join(' ')) + ' WHERE ' + String(condition));
-    console.log(queryString)
-    this.connect(queryString, newValues);
+    return this.connect(queryString, newValues);
   },
 
   deleteAll: function(table) {
     var queryString = String('DELETE FROM ' + String(table));
-    this.connect(queryString);
+    return this.connect(queryString);
   },
 
   deleteOne: function(table, condition) {
     var queryString = String('DELETE FROM ' + String(table) + ' WHERE ' + String(condition));
-    this.connect(queryString);
+    return this.connect(queryString);
   },
 
   generateBangArray: function(values) {
@@ -57,7 +55,7 @@ module.exports = {
   
   connect: function(queryString, values) {
     this.values = [] || values;
-    pg.connect(conString, function(err, client, done) {
+    pg.connect(this.conString, function(err, client, done) {
       if (err) {
         return console.error('error fetching client from pool', err);
       }
@@ -69,7 +67,7 @@ module.exports = {
         if (err) {
           return console.error('error running query', err);
         }
-        console.log(result);
+        return result;
       }); 
     })
   } 
