@@ -1,7 +1,10 @@
-
 module.exports = {
   pg: require('pg'),
-  conString = "postgres://@localhost/database",
+  conString: 'database',
+  conStringBuilder: function(conString) {
+    this.conString = ("postgres://@localhost/" + String(conString));
+  },
+
   insert: function(table, columns, values) {
     var bangArray = this.generateBangArray(values);
     var queryString = String('INSERT INTO ' + String(table) + '(' + columns.toString() + ') VALUES('+ bangArray.toString() + ') returning id');
@@ -55,7 +58,7 @@ module.exports = {
   
   connect: function(queryString, values) {
     this.values = [] || values;
-    pg.connect(this.conString, function(err, client, done) {
+    this.pg.connect(this.conString, function(err, client, done) {
       if (err) {
         return console.error('error fetching client from pool', err);
       }
