@@ -1,87 +1,91 @@
 module.exports = {
-  pg: require('pg'),
-  conString: 'database',
-  conStringBuilder: function(conString) {
-    this.conString = ("postgres://@localhost/" + String(conString));
-  },
+  var pg = require('pg');
+  var Promise = require('promise');
 
-  insert: function(table, columns, values) {
-    var bangArray = this.generateBangArray(values);
-    var queryString = String('INSERT INTO ' + String(table) + '(' + columns.toString() + ') VALUES('+ bangArray.toString() + ') returning id');
-    return this.connect(queryString, values);
-  },
+  function Database (databaseName, host) {
+    this.host = host || 'postgres://@localhost/';
+    this.databaseName = databaseName || 'database';
+    this.conString = this.host + this.databaseName;
+  }
 
-  selectAll: function(table) {
-    var queryString = String('SELECT * FROM ' + String(table));
-    return this.connect(queryString);
-  },
-
-  selectOne: function(table, condition) {
-    var queryString = String('SELECT * FROM ' + String(table) + ' WHERE ' + String(condition));
-    return this.connect(queryString);
-  },
-
-  update: function(table, columns, newValues, condition) {
-    var columnAssignmentArray = [];
-    for(var i = 0; i < columns.length; i++){
-      if(i < columns.length-1){
-        columnAssignmentArray.push('' + String(columns[i]) + ' = $' + String(i+1) + ',');
-      }else{
-        columnAssignmentArray.push(String(columns[i]) + ' = $' + String(i+1));        
-      }
+  Database.prototype.generateIdentifierArray = function (columns) {
+    var identifierArray = [];
+    for(var i = 1; i <= columns.length; i++) {
+      identifierArray.push('$' + String(i));
     }
-    var bangArray = this.generateBangArray(newValues)
-    var queryString = String('UPDATE ' + String(table) + ' SET ' + String(columnAssignmentArray.join(' ')) + ' WHERE ' + String(condition));
-    return this.connect(queryString, newValues);
-  },
+    return identifierArray;
+  }
 
-  deleteAll: function(table) {
-    var queryString = String('DELETE FROM ' + String(table));
-    return this.connect(queryString);
-  },
-
-  deleteOne: function(table, condition) {
-    var queryString = String('DELETE FROM ' + String(table) + ' WHERE ' + String(condition));
-    return this.connect(queryString);
-  },
-
-  generateBangArray: function(values) {
-    //build bangArray e.g. ($1, $2, $3...)
-    var bangArray = [];
-    if(typeof values == 'object'){
-      for(var i = 1; i < values.length+1; i++){
-        bangArray.push('$' + String(i));
-      }
-    }
-    return bangArray;
-  },
-  
-  connect: function(queryString, values) {
-    this.values = [] || values;
-    this.pg.connect(this.conString, function(err, client, done) {
-      if (err) {
-        return console.error('error fetching client from pool', err);
-      }
-      //pg connect success
-      console.log('connected to database');
-
-      client.query(queryString, values, function(err, result) {
-        done();
+  Database.prototype.connect = function (queryString, values) {
+    var conString = this.conString;
+    return new Promise(function (resolve, reject) {
+      pg.connect(conString, function (err, client, done) {
         if (err) {
-          return console.error('error running query', err);
+          return console.error('error fetching client from pool', err);
         }
-        return result;
-      }); 
-    })
-  } 
+        console.log('connected to database');
+        client.query(queryString, values, function (err, result) {
+          done();
+          if (err) {
+            reject (err);
+          } else {
+            resolve (result);
+          }
+          client.end();
+        }); 
+      });
+    });
+  }
+
+  Database.prototype.getAll = function (table) {
+    var queryString = String('SELECT * FROM ' + table);
+    
+    return this.connect(queryString);
+  }
+
+  Database.prototype.getSpecific = function (table, condition) {
+    var queryString = String('SELECT * FROM ' + table + ' WHERE ' + condition);
+    
+    return this.connect(queryString);
+  }
+
+  Database.prototype.getColumn = function (table, column) {
+    var queryString = String('SELECT DISTINCT ' + column + ' FROM ' + table);
+
+    return this.connect(queryString);
+  }
+
+  Database.prototype.insert = function (table, columns, values, returnValue) {
+    this.returnValue = returnValue || '*';
+    var queryString = String('INSERT INTO ' + table + '(' + columns.toString() + ') VALUES(' + this.generateIdentifierArray(columns).toString() + ') RETURNING ' + this.returnValue);
+
+    return this.connect(queryString, values);
+  }
+
+  Database.prototype.update = function (table, columns, newValues, condition) {
+    var modifiedIdentifierArray = [];
+    var identifierArray = this.generateIdentifierArray(columns);
+    for(var i = 0; i < columns.length; i++) {
+      if(i == columns.length - 1) {
+        modifiedIdentifierArray += String(columns[i] + ' = ' + identifierArray[i] + ' ');
+      } else {
+        modifiedIdentifierArray += String(columns[i] + ' = ' + identifierArray[i] + ', ');      
+      }
+    }
+    var queryString = String('UPDATE ' + table + ' SET ' + modifiedIdentifierArray.toString() + 'WHERE ' + condition);
+
+    return this.connect(queryString, newValues)
+  }
+
+  Database.prototype.deleteSpecific = function (table, condition) {
+    var queryString = String('DELETE FROM ' + table + ' WHERE ' + condition + ' RETURNING *');
+
+    return this.connect(queryString);
+  }
+
+  Database.prototype.deleteAll = function (table) {
+    var queryString = String('DELETE FROM ' + table + ' RETURNING *');
+
+    return this.connect(queryString);
+  }
 }
-
-
-//some example calls
-// obj.deleteAll('movies')
-// obj.deleteOne('movies', 'id = 11');
-// obj.insert('movies', ['title', 'genre', 'year'], ['The Godfather', 'Drama', '1970']);
-// obj.selectAll('movies', 'id = 13');
-// obj.update('movies', ['title', 'genre', 'year'], ['The Godfather', 'Crime, Drama', '1972'], 'id = 14');
-// obj.update('movies', ['title', 'genre', 'year'], ['The Godfather', 'Crime, Drama', '1972', 14], 'id = $4');
-// obj.deleteOne('movies', 'id=12');
